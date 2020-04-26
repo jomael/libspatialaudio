@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.1)
-project(spatialaudio VERSION 0.3.0)
+
+set(PACKAGE_VERSION_MAJOR "0")
+set(PACKAGE_VERSION_MINOR "3")
+set(PACKAGE_VERSION_PATCH "1")
+project(spatialaudio VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
+
+set(LIBRARY_SOVERSION_MAJOR "1")
+set(LIBRARY_SOVERSION_MINOR "0")
+set(LIBRARY_SOVERSION_PATCH "0")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+option(BUILD_SHARED_LIBS "Build shared library" ON)
+option(BUILD_STATIC_LIBS "Build static library" ON)
+
+include(GNUInstallDirs)
 
 list(APPEND headers
     include/AmbisonicBase.h
@@ -12,6 +25,7 @@ list(APPEND headers
     include/AmbisonicBinauralizer.h
     include/AmbisonicEncoderDist.h
     include/AmbisonicPsychoacousticFilters.h
+    include/AmbisonicShelfFilters.h
     include/AmbisonicTypesDefinesCommons.h
     include/SpeakersBinauralizer.h
     include/AmbisonicCommons.h
@@ -44,6 +58,7 @@ list(APPEND sources
     source/AmbisonicDecoder.cpp
     source/AmbisonicBinauralizer.cpp
     source/AmbisonicSource.cpp
+    source/AmbisonicShelfFilters.cpp
     source/hrtf/mit_hrtf.cpp
     source/hrtf/sofa_hrtf.cpp
     source/BFormat.cpp
@@ -63,15 +78,30 @@ set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
 include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
 
-if(${MYSOFA_FOUND})
+if(MYSOFA_FOUND)
     include_directories(${MYSOFA_INCLUDE_DIRS})
-endif(${MYSOFA_FOUND})
+endif(MYSOFA_FOUND)
 
-add_library(spatialaudio STATIC ${sources})
+if(BUILD_STATIC_LIBS)
+    add_library(spatialaudio-static STATIC ${sources})
+    if(MYSOFA_FOUND)
+        target_link_libraries(spatialaudio-static ${MYSOFA_LIBRARIES})
+    endif(MYSOFA_FOUND)
+    SET_TARGET_PROPERTIES(spatialaudio-static PROPERTIES OUTPUT_NAME spatialaudio CLEAN_DIRECT_OUTPUT 1 POSITION_INDEPENDENT_CODE ON)
+    install(TARGETS spatialaudio-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif(BUILD_STATIC_LIBS)
 
-if(${MYSOFA_FOUND})
-    target_link_libraries(spatialaudio ${MYSOFA_LIBRARIES})
-endif(${MYSOFA_FOUND})
+if(BUILD_SHARED_LIBS)
+    add_library(spatialaudio-shared SHARED ${sources})
+    if(MYSOFA_FOUND)
+        target_link_libraries(spatialaudio-shared ${MYSOFA_LIBRARIES})
+    endif(MYSOFA_FOUND)
+    SET_TARGET_PROPERTIES(spatialaudio-shared PROPERTIES OUTPUT_NAME spatialaudio CLEAN_DIRECT_OUTPUT 1)
+    set_property(TARGET spatialaudio-shared PROPERTY VERSION "${LIBRARY_SOVERSION_MAJOR}.${LIBRARY_SOVERSION_MINOR}.${LIBRARY_SOVERSION_PATCH}")
+    set_property(TARGET spatialaudio-shared PROPERTY SOVERSION ${LIBRARY_SOVERSION_MAJOR} )
+    set_property(TARGET spatialaudio-shared PROPERTY C_VISIBILITY_PRESET hidden)
+    install(TARGETS spatialaudio-shared LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif(BUILD_SHARED_LIBS)
 
 option(HAVE_MIT_HRTF "Should MIT HRTF be built-in" ON)
 
@@ -80,21 +110,21 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-if(${HAVE_MYSOFA})
-    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/lib -lmysofa")
-    set(MYSOFA_INCLUDE "-I${MYSOFA_ROOT_DIR}/include")
-endif(${HAVE_MYSOFA})
+if(MYSOFA_FOUND)
+    get_filename_component(MYSOFA_LIB_DIR "${MYSOFA_LIBRARIES}" DIRECTORY)
+    set(MYSOFA_LIB "-L${MYSOFA_LIB_DIR} -lmysofa")
+    set(MYSOFA_INCLUDE "-I${MYSOFA_INCLUDE_DIRS}")
+endif(MYSOFA_FOUND)
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/spatialaudio.pc.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
-  @ONLY
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/spatialaudio.pc.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+    @ONLY
 )
 
-install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
-install(FILES ${headers} DESTINATION include/spatialaudio)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION lib/pkgconfig)
-install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include/spatialaudio)
+install(FILES ${headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spatialaudio)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spatialaudio)
 
 #Tarballs generation
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})

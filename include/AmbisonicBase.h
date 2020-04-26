@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicBase - Ambisonic Base                                         #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicBase.h                                          #*/
 /*#  Version:       0.1                                                      #*/
@@ -60,7 +60,6 @@ protected:
     unsigned m_nOrder;
     bool m_b3D;
     unsigned m_nChannelCount;
-    bool m_bOpt;
 };
 
 #endif //_AMBISONIC_BASE_H

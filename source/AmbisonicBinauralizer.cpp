@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicBinauralizer - Ambisonic Binauralizer                         #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicBinauralizer.cpp                                #*/
@@ -40,6 +40,8 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned& tailLength,
                                        std::string HRTFPath)
 {
+    shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+
     //Iterators
     unsigned niEar = 0;
     unsigned niChannel = 0;
@@ -101,7 +103,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
             //Scale the HRTFs by the coefficient of the current channel/component
             // The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
             // for SN3D normalised Ambisonic inputs.
-            float fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
+            float fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2.f*floorf(sqrtf((float)niChannel)) + 1.f);
             for(niTap = 0; niTap < m_nTaps; niTap++)
             {
                 pfHRTF[0][niTap] *= fCoefficient;
@@ -189,11 +191,13 @@ void CAmbisonicBinauralizer::Reset()
 {
     memset(m_pfOverlap[0].data(), 0, m_nOverlapLength * sizeof(float));
     memset(m_pfOverlap[1].data(), 0, m_nOverlapLength * sizeof(float));
+
+    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Refresh()
 {
-
+    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
@@ -204,6 +208,8 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
     unsigned ni = 0;
     kiss_fft_cpx cpTemp;
 
+    // Apply psychoacoustic optimisation filters
+    shelfFilters.Process(pBFSrc);
 
     /* If CPU load needs to be reduced then perform the convolution for each of the Ambisonics/spherical harmonic
     decompositions of the loudspeakers HRTFs for the left ear. For the left ear the results of these convolutions

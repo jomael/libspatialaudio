@@ -1,7 +1,7 @@
 /*############################################################################*/
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      Ambisonics.h                                             #*/
 /*#  Version:       0.1                                                      #*/
@@ -29,6 +29,7 @@
 #include "AmbisonicBinauralizer.h"
 #include "AmbisonicZoomer.h"
 #include "AmbisonicDecoderPresets.h"
+#include "AmbisonicShelfFilters.h"
 
 #endif //_AMBISONICS_H
 

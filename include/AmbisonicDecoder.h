@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicDecoder - Ambisonic Decoder                                   #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicDecoder.h                                       #*/
@@ -20,12 +20,13 @@
 #include "AmbisonicBase.h"
 #include "BFormat.h"
 #include "AmbisonicSpeaker.h"
+#include "AmbisonicShelfFilters.h"
 
 enum Amblib_SpeakerSetUps
 {
     kAmblib_CustomSpeakerSetUp = -1,
     ///2D Speaker Setup
-    kAmblib_Mono, kAmblib_Stereo, kAmblib_LCR, kAmblib_Quad, kAmblib_50,
+    kAmblib_Mono, kAmblib_Stereo, kAmblib_LCR, kAmblib_Quad, kAmblib_50, kAmblib_70, kAmblib_51, kAmblib_71,
     kAmblib_Pentagon, kAmblib_Hexagon, kAmblib_HexagonWithCentre, kAmblib_Octagon, 
     kAmblib_Decadron, kAmblib_Dodecadron, 
     ///3D Speaker Setup
@@ -54,7 +55,7 @@ public:
         Else, if using one of the default configurations, nSpeakers does not
         need to be specified. Function returns true if successful.
     */
-    bool Configure(unsigned nOrder, bool b3D, int nSpeakerSetUp, unsigned nSpeakers = 0);
+    bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, int nSpeakerSetUp, unsigned nSpeakers = 0);
     /**
         Resets all the speakers.
     */
@@ -109,13 +110,33 @@ public:
         specified speaker. Useful for presets for irregular physical loudspeakery arrays
     */
     void SetCoefficient(unsigned nSpeaker, unsigned nChannel, float fCoeff);
+    /**
+        Gets whether a preset has been loaded or if the coefficients are calculated
+    */
+    bool GetPresetLoaded();
 
 protected:
     void SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers = 1);
 
+    /**
+        Checks if the current speaker arrangement is one that has a pre-defined
+        preset. If true, sets the m_nSpeakerSetUp to the correct value
+    */
+    void CheckSpeakerSetUp();
+
+    /**
+        Load a pre-defined decoder preset if the speaker set-up is a supported
+        layout
+    */
+    void LoadDecoderPreset();
+
     int m_nSpeakerSetUp;
     unsigned m_nSpeakers;
     CAmbisonicSpeaker* m_pAmbSpeakers;
+    bool m_bPresetLoaded;
+
+private:
+    CAmbisonicShelfFilters shelfFilters;
 };
 
 #endif // _AMBISONIC_DECODER_H

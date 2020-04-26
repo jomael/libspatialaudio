@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicProcessor - Ambisonic Processor                               #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicProcessor.h                                     #*/
@@ -19,8 +19,6 @@
 
 #include "AmbisonicBase.h"
 #include "BFormat.h"
-#include "kiss_fftr.h"
-#include "AmbisonicPsychoacousticFilters.h"
 #include "AmbisonicZoomer.h"
 
 enum ProcessorDOR
@@ -61,28 +59,28 @@ public:
         {
             fBeta = 0.f;
             fGamma = 0.f;
-            fAlpha = atan2(fSinYaw, fCosYaw);
+            fAlpha = atan2f(fSinYaw, fCosYaw);
         }
         else
         {
             if (r33 == -1.f)
             {
-                fBeta = M_PI;
+                fBeta = (float)M_PI;
                 fGamma = 0.f;
-                fAlpha = atan2(-fSinYaw, fCosYaw);
+                fAlpha = atan2f(-fSinYaw, fCosYaw);
             }
             else
             {
 
                 float r32 = -fCosYaw * fSinRoll + fCosRoll * fSinPitch * fSinYaw ;
                 float r31 = fCosRoll * fCosYaw * fSinPitch + fSinRoll * fSinYaw ;
-                fAlpha = atan2( r32 , r31 );
+                fAlpha = atan2f( r32 , r31 );
 
-                fBeta = acos( r33 );
+                fBeta = acosf( r33 );
 
                 float r23 = fCosPitch * fSinRoll;
                 float r13 = -fSinPitch;
-                fGamma = atan2( r23 , -r13 );
+                fGamma = atan2f( r23 , -r13 );
             }
         }
     }
@@ -149,30 +147,10 @@ private:
     void ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSamples);
     void ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSamples);
     void ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSamples);
-    void ProcessOrder1_2D(CBFormat* pBFSrcDst, unsigned nSamples);
-    void ProcessOrder2_2D(CBFormat* pBFSrcDst, unsigned nSamples);
-    void ProcessOrder3_2D(CBFormat* pBFSrcDst, unsigned nSamples);
-
-    void ShelfFilterOrder(CBFormat* pBFSrcDst, unsigned nSamples);
 
 protected:
     Orientation m_orientation;
     float* m_pfTempSample;
-
-    kiss_fftr_cfg m_pFFT_psych_cfg;
-    kiss_fftr_cfg m_pIFFT_psych_cfg;
-
-    float* m_pfScratchBufferA;
-    float** m_pfOverlap;
-    unsigned m_nFFTSize;
-    unsigned m_nBlockSize;
-    unsigned m_nTaps;
-    unsigned m_nOverlapLength;
-    unsigned m_nFFTBins;
-    float m_fFFTScaler;
-
-    kiss_fft_cpx** m_ppcpPsychFilters;
-    kiss_fft_cpx* m_pcpScratch;
 
     float m_fCosAlpha;
     float m_fSinAlpha;

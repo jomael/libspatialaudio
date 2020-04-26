@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicBinauralizer - Ambisonic Binauralizer                         #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicBinauralizer.h                                  #*/
@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "AmbisonicShelfFilters.h"
 #include "AmbisonicDecoder.h"
 #include "AmbisonicEncoder.h"
 #include "kiss_fftr.h"
@@ -66,6 +67,8 @@ public:
 
 protected:
     CAmbisonicDecoder m_AmbDecoder;
+
+    CAmbisonicShelfFilters shelfFilters;
 
     unsigned m_nBlockSize;
     unsigned m_nTaps;
